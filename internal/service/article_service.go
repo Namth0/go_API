@@ -4,6 +4,7 @@ import (
 	"errors"
 	"mon-api/internal/models"
 	"mon-api/internal/repository"
+	"strings"
 )
 
 type ArticleService struct {
@@ -27,23 +28,40 @@ func (s *ArticleService) GetByID(id string) (*models.Article, error) {
 }
 
 func (s *ArticleService) Create(article models.Article) error {
-	// Validation
-	if article.Title == "" {
-		return errors.New("le titre est requis")
-	}
-	if article.Content == "" {
-		return errors.New("le contenu est requis")
-	}
-	if article.ID == "" {
-		return errors.New("l'ID est requis")
+	// Validation du format
+	if err := article.Validate(); err != nil {
+		return err
 	}
 
-	// Vérifier si l'article existe déjà
+	// Vérification de l'unicité
 	_, found := s.repo.GetByID(article.ID)
 	if found {
 		return errors.New("un article avec cet ID existe déjà")
 	}
 
+	// Nettoyage des données
+	article.Title = strings.TrimSpace(article.Title)
+	article.Content = strings.TrimSpace(article.Content)
+
 	s.repo.Create(article)
 	return nil
+}
+
+func (s *ArticleService) Update(article models.Article) error {
+	// Validation du format
+	if err := article.Validate(); err != nil {
+		return err
+	}
+
+	// Vérification de l'existence
+	_, found := s.repo.GetByID(article.ID)
+	if !found {
+		return errors.New("article non trouvé")
+	}
+
+	// Nettoyage des données
+	article.Title = strings.TrimSpace(article.Title)
+	article.Content = strings.TrimSpace(article.Content)
+
+	return s.repo.Update(article)
 }
