@@ -76,3 +76,12 @@ func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 
 	c.JSON(http.StatusOK, article)
 }
+
+func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
+	id := c.Param("id")
+	if err := h.service.Delete(id); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

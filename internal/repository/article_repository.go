@@ -9,13 +9,18 @@ type ArticleRepository struct {
 	articles []models.Article
 }
 
-func NewArticleRepository() *ArticleRepository {
-	return &ArticleRepository{
-		articles: []models.Article{
+func NewArticleRepository(withDefaultData bool) *ArticleRepository {
+	repo := &ArticleRepository{
+		articles: []models.Article{},
+	}
+	if withDefaultData {
+		repo.articles = []models.Article{
 			{ID: "1", Title: "Premier article", Content: "Contenu du premier article"},
 			{ID: "2", Title: "Deuxième article", Content: "Contenu du deuxième article"},
-		},
+			{ID: "3", Title: "Troisième article", Content: "Contenu du troisième article"},
+		}
 	}
+	return repo
 }
 
 func (r *ArticleRepository) GetAll() []models.Article {
@@ -39,6 +44,16 @@ func (r *ArticleRepository) Update(article models.Article) error {
 	for i, a := range r.articles {
 		if a.ID == article.ID {
 			r.articles[i] = article
+			return nil
+		}
+	}
+	return errors.New("article non trouvé")
+}
+
+func (r *ArticleRepository) Delete(id string) error {
+	for i, article := range r.articles {
+		if article.ID == id {
+			r.articles = append(r.articles[:i], r.articles[i+1:]...)
 			return nil
 		}
 	}

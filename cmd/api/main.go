@@ -16,7 +16,7 @@ func main() {
 	router.Use(middleware.Logger())
 
 	// Initialisation des dépendances
-	articleRepo := repository.NewArticleRepository()
+	articleRepo := repository.NewArticleRepository(true)
 	articleService := service.NewArticleService(articleRepo)
 	articleHandler := handlers.NewArticleHandler(articleRepo, articleService)
 
@@ -29,6 +29,7 @@ func main() {
 			articles.GET("/:id", articleHandler.GetArticle)
 			articles.POST("", articleHandler.CreateArticle)
 			articles.PUT("/:id", articleHandler.UpdateArticle)
+			articles.DELETE("/:id", articleHandler.DeleteArticle)
 		}
 	}
 

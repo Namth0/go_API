@@ -65,3 +65,11 @@ func (s *ArticleService) Update(article models.Article) error {
 
 	return s.repo.Update(article)
 }
+
+func (s *ArticleService) Delete(id string) error {
+	_, found := s.repo.GetByID(id)
+	if !found {
+		return errors.New("article non trouvé")
+	}
+	return s.repo.Delete(id)
+}
