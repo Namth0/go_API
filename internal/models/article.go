@@ -3,12 +3,15 @@ package models
 import (
 	"errors"
 	"strings"
+	"time"
 )
 
 type Article struct {
-	ID      string `json:"id"`
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	ID        string    `json:"id" gorm:"primaryKey"`
+	Title     string    `json:"title" gorm:"not null;size:255"`
+	Content   string    `json:"content" gorm:"not null;type:text"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 // Validate vérifie le format des données de l'article
@@ -28,7 +31,7 @@ func (a *Article) Validate() error {
 	if len(a.Title) < 3 {
 		return errors.New("le titre doit contenir au moins 3 caractères")
 	}
-	if len(a.Title) > 100 {
+	if len(a.Title) > 255 {
 		return errors.New("le titre ne doit pas dépasser 100 caractères")
 	}
 

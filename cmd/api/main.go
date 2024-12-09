@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+	"mon-api/config"
 	"mon-api/internal/handlers"
 	"mon-api/internal/repository"
 	"mon-api/internal/service"
@@ -10,13 +12,19 @@ import (
 )
 
 func main() {
+
+	dbConfig := config.InitDB()
+	if dbConfig.DB == nil {
+		log.Fatal("Failed to initialize database connection")
+	}
+	log.Println("Successfully connected to database")
 	router := gin.Default()
 
 	// Ajout du middleware de logging
 	router.Use(middleware.Logger())
 
 	// Initialisation des dépendances
-	articleRepo := repository.NewArticleRepository(true)
+	articleRepo := repository.NewArticleRepository(false, dbConfig.DB)
 	articleService := service.NewArticleService(articleRepo)
 	articleHandler := handlers.NewArticleHandler(articleRepo, articleService)
 

@@ -3,24 +3,19 @@ package repository
 import (
 	"errors"
 	"mon-api/internal/models"
+	"strconv"
+
+	"gorm.io/gorm"
 )
 
 type ArticleRepository struct {
 	articles []models.Article
+	nextID   int
+	db       *gorm.DB
 }
 
-func NewArticleRepository(withDefaultData bool) *ArticleRepository {
-	repo := &ArticleRepository{
-		articles: []models.Article{},
-	}
-	if withDefaultData {
-		repo.articles = []models.Article{
-			{ID: "1", Title: "Premier article", Content: "Contenu du premier article"},
-			{ID: "2", Title: "Deuxième article", Content: "Contenu du deuxième article"},
-			{ID: "3", Title: "Troisième article", Content: "Contenu du troisième article"},
-		}
-	}
-	return repo
+func NewArticleRepository(withDefaultData bool, db *gorm.DB) *ArticleRepository {
+	return &ArticleRepository{db: db}
 }
 
 func (r *ArticleRepository) GetAll() []models.Article {
@@ -36,7 +31,14 @@ func (r *ArticleRepository) GetByID(id string) (*models.Article, bool) {
 	return nil, false
 }
 
+func (r *ArticleRepository) generateNextID() string {
+	id := strconv.Itoa(r.nextID)
+	r.nextID++
+	return id
+}
+
 func (r *ArticleRepository) Create(article models.Article) {
+	article.ID = r.generateNextID()
 	r.articles = append(r.articles, article)
 }
 
@@ -58,4 +60,21 @@ func (r *ArticleRepository) Delete(id string) error {
 		}
 	}
 	return errors.New("article non trouvé")
+}
+
+func (r *ArticleRepository) SaveToDB(article models.Article) error {
+	err := r.db.Create(&article).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ArticleRepository) GetFromDB(id string) (*models.Article, error) {
+	article := &models.Article{}
+	err := r.db.First(article, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return article, nil
 }
