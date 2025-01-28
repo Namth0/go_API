@@ -21,7 +21,7 @@ func (s *ArticleService) GetAll() []models.Article {
 
 func (s *ArticleService) GetByID(id string) (*models.Article, error) {
 	article, found := s.repo.GetByID(id)
-	if !found {
+	if found != nil {
 		return nil, errors.New("article non trouvé")
 	}
 	return article, nil
@@ -35,8 +35,8 @@ func (s *ArticleService) Create(article models.Article) error {
 
 	// Vérification de l'unicité
 	_, found := s.repo.GetByID(article.ID)
-	if found {
-		return errors.New("un article avec cet ID existe déjà")
+	if found == nil {
+		return errors.New("article déjà existant")
 	}
 
 	// Nettoyage des données
@@ -55,7 +55,7 @@ func (s *ArticleService) Update(article models.Article) error {
 
 	// Vérification de l'existence
 	_, found := s.repo.GetByID(article.ID)
-	if !found {
+	if found != nil {
 		return errors.New("article non trouvé")
 	}
 
@@ -68,7 +68,7 @@ func (s *ArticleService) Update(article models.Article) error {
 
 func (s *ArticleService) Delete(id string) error {
 	_, found := s.repo.GetByID(id)
-	if !found {
+	if found != nil {
 		return errors.New("article non trouvé")
 	}
 	return s.repo.Delete(id)

@@ -3,78 +3,68 @@ package repository
 import (
 	"errors"
 	"mon-api/internal/models"
-	"strconv"
+	"time"
+
+	"github.com/google/uuid"
 
 	"gorm.io/gorm"
 )
 
 type ArticleRepository struct {
-	articles []models.Article
-	nextID   int
-	db       *gorm.DB
+	db *gorm.DB
 }
 
-func NewArticleRepository(withDefaultData bool, db *gorm.DB) *ArticleRepository {
+func NewArticleRepository(db *gorm.DB) *ArticleRepository {
 	return &ArticleRepository{db: db}
 }
 
 func (r *ArticleRepository) GetAll() []models.Article {
-	return r.articles
+	var articles []models.Article
+	r.db.Find(&articles)
+	return articles
 }
 
-func (r *ArticleRepository) GetByID(id string) (*models.Article, bool) {
-	for _, article := range r.articles {
-		if article.ID == id {
-			return &article, true
-		}
+func (r *ArticleRepository) GetByID(id string) (*models.Article, error) {
+	if id == "" {
+		return nil, errors.New("article ID cannot be empty")
 	}
-	return nil, false
+
+	// Validate UUID format
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid article ID format")
+	}
+
+	var article models.Article
+	result := r.db.Where("id = ?", id).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &article, nil
 }
 
-func (r *ArticleRepository) generateNextID() string {
-	id := strconv.Itoa(r.nextID)
-	r.nextID++
-	return id
-}
+func (r *ArticleRepository) Create(article models.Article) error {
+	// Génère un nouvel UUID si non fourni
+	if article.ID == "" {
+		article.ID = uuid.New().String()
+	}
 
-func (r *ArticleRepository) Create(article models.Article) {
-	article.ID = r.generateNextID()
-	r.articles = append(r.articles, article)
+	// Force les timestamps à être générés par la base de données
+	article.CreatedAt = time.Now()
+	article.UpdatedAt = time.Now()
+
+	return r.db.Create(&article).Error
 }
 
 func (r *ArticleRepository) Update(article models.Article) error {
-	for i, a := range r.articles {
-		if a.ID == article.ID {
-			r.articles[i] = article
-			return nil
-		}
-	}
-	return errors.New("article non trouvé")
+	result := r.db.Save(&article)
+	return result.Error
 }
 
 func (r *ArticleRepository) Delete(id string) error {
-	for i, article := range r.articles {
-		if article.ID == id {
-			r.articles = append(r.articles[:i], r.articles[i+1:]...)
-			return nil
-		}
+	result := r.db.Delete(&models.Article{}, "id = ?", id)
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
-	return errors.New("article non trouvé")
-}
-
-func (r *ArticleRepository) SaveToDB(article models.Article) error {
-	err := r.db.Create(&article).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *ArticleRepository) GetFromDB(id string) (*models.Article, error) {
-	article := &models.Article{}
-	err := r.db.First(article, id).Error
-	if err != nil {
-		return nil, err
-	}
-	return article, nil
+	return result.Error
 }

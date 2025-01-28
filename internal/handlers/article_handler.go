@@ -9,6 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+article_handler.go est un fichier qui gère les requêtes HTTP pour les articles.
+
+- GetArticles : Récupère tous les articles
+- GetArticle : Récupère un article par son ID
+- CreateArticle : Crée un nouvel article
+- UpdateArticle : Met à jour un article existant
+- DeleteArticle : Supprime un article existant
+*/
+
 type ArticleHandler struct {
 	repo    *repository.ArticleRepository
 	service *service.ArticleService

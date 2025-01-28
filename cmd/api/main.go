@@ -4,6 +4,7 @@ import (
 	"log"
 	"mon-api/config"
 	"mon-api/internal/handlers"
+	"mon-api/internal/models"
 	"mon-api/internal/repository"
 	"mon-api/internal/service"
 	"mon-api/pkg/middleware"
@@ -17,14 +18,18 @@ func main() {
 	if dbConfig.DB == nil {
 		log.Fatal("Failed to initialize database connection")
 	}
-	log.Println("Successfully connected to database")
-	router := gin.Default()
 
-	// Ajout du middleware de logging
+	err := dbConfig.DB.AutoMigrate(&models.Article{})
+	if err != nil {
+		log.Fatal("Failed to migrate database:", err)
+	}
+
+	log.Println("Successfully connected to database and migrated schemas")
+	router := gin.Default()
 	router.Use(middleware.Logger())
 
 	// Initialisation des dépendances
-	articleRepo := repository.NewArticleRepository(false, dbConfig.DB)
+	articleRepo := repository.NewArticleRepository(dbConfig.DB)
 	articleService := service.NewArticleService(articleRepo)
 	articleHandler := handlers.NewArticleHandler(articleRepo, articleService)
 

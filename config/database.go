@@ -1,11 +1,14 @@
 package config
 
 import (
+	"fmt"
+	"mon-api/internal/models"
 	"os"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 type DBConfig struct {
@@ -30,17 +33,36 @@ func InitDB() DBConfig {
 		DBName:   os.Getenv("DB_NAME"),
 	}
 
-	if config.Host == "" || config.User == "" || config.DBName == "" {
-		panic("Missing required environment variables")
+	if config.Host == "" {
+		panic("DB_HOST is not set")
+	}
+	if config.User == "" {
+		panic("DB_USER is not set")
+	}
+	if config.DBName == "" {
+		panic("DB_NAME is not set")
+	}
+	if config.Port == "" {
+		config.Port = "5433"
 	}
 
 	dsn := "host=" + config.Host + " user=" + config.User +
 		" password=" + config.Password + " dbname=" + config.DBName +
 		" port=" + config.Port + " sslmode=disable"
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	fmt.Println(dsn)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+			NoLowerCase:   false,
+		},
+	})
 	if err != nil {
 		panic("Failed to connect to database: " + err.Error())
+	}
+
+	if err := db.AutoMigrate(&models.Article{}); err != nil {
+		panic("Failed to migrate database: " + err.Error())
 	}
 
 	config.DB = db
