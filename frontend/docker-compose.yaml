@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: webapp
+      POSTGRES_PASSWORD: OthmanEtMartin
+      POSTGRES_DB: pocwebapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  backend:
+    build: ../backend
+    container_name: backend_container
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+
+  frontend:
+      build: 
+        context: ./
+        dockerfile: Dockerfile.test
+      container_name: frontend_container
+      restart: always
+      ports:
+        - "3000:3000"
+      depends_on:
+        - backend
+      environment:
+        API_BASE_URL: http://backend:8080/api/v1
+        NODE_ENV: development
+      volumes:
+        - .:/app
+        - /app/node_modules
+
+volumes:
+  postgres_data:
