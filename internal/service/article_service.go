@@ -27,39 +27,23 @@ func (s *ArticleService) GetByID(id string) (*models.Article, error) {
 	return article, nil
 }
 
-func (s *ArticleService) Create(article models.Article) error {
-	// Validation du format
+func (s *ArticleService) Create(article *models.Article) error {
 	if err := article.Validate(); err != nil {
 		return err
 	}
 
-	// Vérification de l'unicité
-	_, found := s.repo.GetByID(article.ID)
-	if found == nil {
-		return errors.New("article déjà existant")
-	}
-
-	// Nettoyage des données
 	article.Title = strings.TrimSpace(article.Title)
 	article.Content = strings.TrimSpace(article.Content)
 
-	s.repo.Create(article)
-	return nil
+	// Ne pas toucher à l'ID
+	return s.repo.Create(article)
 }
 
-func (s *ArticleService) Update(article models.Article) error {
-	// Validation du format
+func (s *ArticleService) Update(article *models.Article) error {
 	if err := article.Validate(); err != nil {
 		return err
 	}
 
-	// Vérification de l'existence
-	_, found := s.repo.GetByID(article.ID)
-	if found != nil {
-		return errors.New("article non trouvé")
-	}
-
-	// Nettoyage des données
 	article.Title = strings.TrimSpace(article.Title)
 	article.Content = strings.TrimSpace(article.Content)
 

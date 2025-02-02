@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -20,12 +21,12 @@ type DBConfig struct {
 	DB       *gorm.DB
 }
 
-func InitDB() DBConfig {
+func InitDB() (*gorm.DB, *DBConfig, error) {
 	if err := godotenv.Load(); err != nil {
-		panic("Error loading .env file")
+		return nil, nil, fmt.Errorf("Error loading .env file")
 	}
 
-	config := DBConfig{
+	config := &DBConfig{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
 		User:     os.Getenv("DB_USER"),
@@ -34,37 +35,52 @@ func InitDB() DBConfig {
 	}
 
 	if config.Host == "" {
-		panic("DB_HOST is not set")
+		return nil, nil, fmt.Errorf("DB_HOST is not set")
 	}
 	if config.User == "" {
-		panic("DB_USER is not set")
+		return nil, nil, fmt.Errorf("DB_USER is not set")
 	}
 	if config.DBName == "" {
-		panic("DB_NAME is not set")
+		return nil, nil, fmt.Errorf("DB_NAME is not set")
 	}
 	if config.Port == "" {
 		config.Port = "5433"
 	}
 
-	dsn := "host=" + config.Host + " user=" + config.User +
-		" password=" + config.Password + " dbname=" + config.DBName +
-		" port=" + config.Port + " sslmode=disable"
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable search_path=public",
+		config.Host, config.User, config.Password, config.DBName, config.Port,
+	)
 
-	fmt.Println(dsn)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 			NoLowerCase:   false,
 		},
+		Logger:      logger.Default.LogMode(logger.Info),
+		PrepareStmt: true,
 	})
 	if err != nil {
-		panic("Failed to connect to database: " + err.Error())
+		return nil, nil, fmt.Errorf("Failed to connect to database: %v", err)
 	}
 
-	if err := db.AutoMigrate(&models.Article{}); err != nil {
-		panic("Failed to migrate database: " + err.Error())
-	}
+	db.Exec("SET search_path TO public")
 
 	config.DB = db
-	return config
+
+	// Migration and connection testing
+	if err := db.AutoMigrate(&models.Article{}); err != nil {
+		return nil, nil, fmt.Errorf("Failed to migrate database: %v", err)
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err = sqlDB.Ping(); err != nil {
+		return nil, nil, fmt.Errorf("Failed to ping database: %v", err)
+	}
+
+	return db, config, nil
 }

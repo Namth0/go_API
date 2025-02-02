@@ -4,8 +4,6 @@ import (
 	"errors"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Article struct {
@@ -18,12 +16,7 @@ type Article struct {
 
 // Validate vérifie le format des données de l'article
 func (a *Article) Validate() error {
-	if a.ID != "" {
-		if _, err := uuid.Parse(a.ID); err != nil {
-			return errors.New("invalid article ID format")
-		}
-	}
-
+	// Remove ID validation as it's handled by PostgreSQL
 	if strings.TrimSpace(a.Title) == "" {
 		return errors.New("le titre est requis")
 	}
@@ -32,7 +25,6 @@ func (a *Article) Validate() error {
 		return errors.New("le titre ne doit pas dépasser 255 caractères")
 	}
 
-	// Validation du contenu
 	if strings.TrimSpace(a.Content) == "" {
 		return errors.New("le contenu est requis")
 	}
