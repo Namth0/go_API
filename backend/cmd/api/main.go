@@ -7,7 +7,7 @@ import (
 	"mon-api/internal/repository"
 	"mon-api/internal/service"
 	"mon-api/pkg/middleware"
-
+	"mon-api/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -50,12 +50,12 @@ func main() {
 	}
 
 	for _, article := range fakeArticles {
-		if err := dbConfig.DB.Create(&article).Error; err != nil {
+		if err := db.Create(&article).Error; err != nil {
 			log.Printf("Erreur durant l'insertion des faux articles: %v", err)
 		}
 	}
 
-	log.Println("Faux articles insérés avec succès!")s
+	log.Println("Faux articles insérés avec succès!")
 
 	router.Run(":8080")
 }

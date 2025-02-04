@@ -1,0 +1,7 @@
+- Publier les images du frontend et du backend sur Docker Hub
+- Régler les problèmes de CORS entre le front et le back
+- Implementer un deuxième service et le relier avec les autres
+- Implémenter HTTPs via Let's Encrypt
+- Trouver un moyen de déployer le cluster sur un fournisseur cloud (GPC, Azure, AWS, jsp)
+- Déployer le cluster sur le cloud à l'aide de Terraform
+- Créer un fichier GitHub Action afin de déployer le code dans le cluster à chaque push

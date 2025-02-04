@@ -4,36 +4,56 @@ Othman BENCHERIF
 Martin RIGAUX
 
 ## Technologies Utilisées
+
 - **Langage Frontend** : Next.js
 - **Langage Backend** : Go
 - **Conteneurisation** : Docker
 - **Orchestration** : Kubernetes
 - **Bases de données** : PostgreSQL
 - **Service Mesh** : Istio
-- **Cloud (optionnel)** : 
+- **Cloud (optionnel)** :
 
 ## Fonctionnalités
+
 1. **Service Unique en Local (10/20)**
+
    - [x] Développement d’une mini-application backend.
    - [x] Création d’une image Docker via un `Dockerfile`.
+   - [x] Créer un déploiement Kubernetes
+   - [x] Créer un service Kubernetes
    - [ ] Publication de l’image sur Docker Hub.
 
 2. **Déploiement Kubernetes (12/20)**
-   - [x] Création d’un déploiement et d’un service Kubernetes pour l’application.
+
    - [x] Configuration d’une **gateway** en local pour le routage via **Ingress** ou **Service Mesh**.
 
 3. **Ajout de Services Supplémentaires (14/20)**
+
    - [ ] Intégration d’un deuxième service backend.
    - [ ] Communication entre les services via API et Service Mesh.
 
 4. **Intégration d’une Base de Données (16/20)**
+
    - [x] Ajout d’une base de données SQL (MySQL/PostgreSQL) en local ou dans le cloud.
    - [ ] Possibilité d’accéder à un système de fichiers partagé via Kubernetes Volumes. (Optionnel)
 
 5. **Sécurisation du Cluster**
+
    - [x] Implémentation des **RBAC** Kubernetes pour la gestion des accès.
    - [x] Chiffrement des échanges entre les services avec **mTLS** via Istio.
-   - [ ] Sécurisation des images Docker et contrôle de la sécurité Kubernetes.
+   - [ ] Implémentation de HTTPs
 
-6. **Déploiement Cloud (Optionnel)**
-   - Déploiement de l’application dans une infrastructure cloud pour améliorer la scalabilité et la résilience.
+6. **Déploiement Cloud (Optionnel) (18/20)**
+   - [ ] Déploiement de l’application dans une infrastructure cloud pour améliorer la scalabilité et la résilience.
+
+## Critères d’évaluations (par ordre décroissant d’importance) :
+
+- Intégration complète d’un maximum de technologies (Web Services, Docker, Kubernetes…)
+- Codage
+- Fonctionnalités
+- Présentation (Front Office - CSS)
+
+Pour les Cyber envoyer par mail à benoit.charroux@gmail.com
+Faire un mini rapport pour que je comprenne ce que vous avez fait avec des copies d’écran de ce à quoi je dois m’attendre et des copies d’écran individuelles des Google labs (voir activitée de votre profil) le code sur Github ou Gitlab
+
+**Date butoir de remise du projet fin avril**

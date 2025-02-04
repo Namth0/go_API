@@ -7,14 +7,12 @@ import { useRouter } from "next/navigation";
 export default function CreateArticleForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [id, setID] = useState<string>("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createArticle({ id, title, content });
-      setID("")
+      await createArticle({ title, content });
       setTitle("");
       setContent("");
       router.refresh();
@@ -26,19 +24,6 @@ export default function CreateArticleForm() {
   return (
     <form onSubmit={handleSubmit} className="mb-8">
       <h2 className="text-2xl font-bold mb-4">Créer un nouvel article</h2>
-      <div className="mb-4">
-        <label htmlFor="title" className="block mb-2">
-          ID:
-        </label>
-        <input
-          type="number"
-          id="id"
-          value={id}
-          onChange={(e) => setID(e.target.value)}
-          required
-          className="w-full p-2 border rounded"
-        />
-      </div>
       <div className="mb-4">
         <label htmlFor="title" className="block mb-2">
           Titre:
