@@ -23,7 +23,7 @@ type DBConfig struct {
 
 func InitDB() (*gorm.DB, *DBConfig, error) {
 	if err := godotenv.Load(); err != nil {
-		return nil, nil, fmt.Errorf("Error loading .env file")
+		return nil, nil, fmt.Errorf("error loading .env file")
 	}
 
 	config := &DBConfig{
@@ -44,7 +44,7 @@ func InitDB() (*gorm.DB, *DBConfig, error) {
 		return nil, nil, fmt.Errorf("DB_NAME is not set")
 	}
 	if config.Port == "" {
-		config.Port = "5433"
+		return nil, nil, fmt.Errorf("DB_PORT is not set")
 	}
 
 	dsn := fmt.Sprintf(
@@ -61,7 +61,7 @@ func InitDB() (*gorm.DB, *DBConfig, error) {
 		PrepareStmt: true,
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to connect to database: %v", err)
+		return nil, nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
 
 	db.Exec("SET search_path TO public")
@@ -70,7 +70,7 @@ func InitDB() (*gorm.DB, *DBConfig, error) {
 
 	// Migration and connection testing
 	if err := db.AutoMigrate(&models.Article{}); err != nil {
-		return nil, nil, fmt.Errorf("Failed to migrate database: %v", err)
+		return nil, nil, fmt.Errorf("failed to migrate database: %v", err)
 	}
 
 	sqlDB, err := db.DB()
@@ -79,7 +79,7 @@ func InitDB() (*gorm.DB, *DBConfig, error) {
 	}
 
 	if err = sqlDB.Ping(); err != nil {
-		return nil, nil, fmt.Errorf("Failed to ping database: %v", err)
+		return nil, nil, fmt.Errorf("failed to ping database: %v", err)
 	}
 
 	return db, config, nil

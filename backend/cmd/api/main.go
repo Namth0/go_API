@@ -4,10 +4,11 @@ import (
 	"log"
 	"mon-api/config"
 	"mon-api/internal/handlers"
+	"mon-api/internal/models"
 	"mon-api/internal/repository"
 	"mon-api/internal/service"
 	"mon-api/pkg/middleware"
-	"mon-api/internal/models"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,6 +25,7 @@ func main() {
 	log.Println("Successfully connected to database")
 	router := gin.Default()
 	router.Use(middleware.Logger())
+	router.Use(middleware.CorsMiddleware())
 
 	// Initialisation des dépendances
 	articleRepo := repository.NewArticleRepository(db)
