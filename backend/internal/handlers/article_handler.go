@@ -5,9 +5,9 @@ import (
 	"mon-api/internal/repository"
 	"mon-api/internal/service"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 /*
@@ -70,57 +70,37 @@ func (h *ArticleHandler) CreateArticle(c *gin.Context) {
 func (h *ArticleHandler) UpdateArticle(c *gin.Context) {
 	id := c.Param("id")
 
-	// Convertir l'ID en int64 pour la validation
-	_, err := strconv.ParseInt(id, 10, 64)
+	var article models.Article
+	if err := c.ShouldBindJSON(&article); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := h.service.UpdateArticle(id, &article)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "ID invalide",
-			"details": err.Error(),
-		})
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Article non trouvé"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Vérifier d'abord si l'article existe
-	existingArticle, err := h.service.GetByID(id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":   "Article non trouvé",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	// Lier le JSON à une nouvelle structure
-	var updateData models.Article
-	if err := c.BindJSON(&updateData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Format JSON invalide",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	// Mettre à jour seulement les champs nécessaires
-	existingArticle.Title = updateData.Title
-	existingArticle.Content = updateData.Content
-
-	// Mettre à jour l'article
-	if err := h.service.Update(existingArticle); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Mise à jour échouée",
-			"details": err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, existingArticle)
+	c.JSON(http.StatusOK, article)
 }
 
 func (h *ArticleHandler) DeleteArticle(c *gin.Context) {
 	id := c.Param("id")
-	if err := h.service.Delete(id); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+
+	err := h.service.DeleteArticle(id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Article non trouvé"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.Status(http.StatusNoContent)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Article supprimé avec succès"})
 }

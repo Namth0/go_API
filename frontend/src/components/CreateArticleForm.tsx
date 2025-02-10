@@ -4,7 +4,11 @@ import { useState } from "react";
 import { createArticle } from "../utils/api";
 import { useRouter } from "next/navigation";
 
-export default function CreateArticleForm() {
+interface CreateArticleFormProps {
+  onArticleCreated?: () => void;
+}
+
+export default function CreateArticleForm({ onArticleCreated }: CreateArticleFormProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const router = useRouter();
@@ -16,8 +20,12 @@ export default function CreateArticleForm() {
       setTitle("");
       setContent("");
       router.refresh();
+      if (onArticleCreated) {
+        onArticleCreated();
+      }
     } catch (error) {
       console.error("Failed to create article:", error);
+      alert("Erreur lors de la création de l'article");
     }
   };
 

@@ -1,66 +1,111 @@
 "use client";
 import { Article, deleteArticle, updateArticle } from "../utils/api";
+import { useState } from 'react';
+import React from 'react';
 
-export default function ArticleList({ articles }: { articles: Article[] }) {
+interface ArticleListProps {
+  articles: Article[];
+}
+
+export default function ArticleList({ articles }: ArticleListProps) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Article>>({});
+
+  const handleDelete = async (id: string) => {
+    try {
+      if (confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
+        await deleteArticle(id);
+        // Rafraîchir la page ou mettre à jour l'état local
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      alert('Erreur lors de la suppression de l\'article');
+    }
+  };
+
+  const handleEdit = (article: Article) => {
+    setEditingId(article.id);
+    setEditForm({ title: article.title, content: article.content });
+  };
+
+  const handleUpdate = async (id: string) => {
+    try {
+      if (!editForm.title || !editForm.content) {
+        alert('Le titre et le contenu sont requis');
+        return;
+      }
+      
+      await updateArticle(id, editForm);
+      setEditingId(null);
+      setEditForm({});
+      // Rafraîchir la page ou mettre à jour l'état local
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating article:', error);
+      alert('Erreur lors de la mise à jour de l\'article');
+    }
+  };
+
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Articles</h2>
-      <ul className="space-y-4">
-        <table className="min-w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left p-4">ID</th>
-              <th className="text-left p-4">Titre</th>
-              <th className="text-left p-4">Contenu</th>
-              <th className="text-left p-4">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {articles.map((article) => (
-              <tr key={article.id} className="border-b hover:bg-gray-50">
-                <td className="p-4">
-                  <span className="">{article.id}</span>
-                </td>
-                <td className="p-4">
-                  <span className="">{article.title}</span>
-                </td>
-                <td className="p-4">{article.content.substring(0, 100)}...</td>
-                <td className="flex gap-2 align-center items-center p-4">
-                  <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    onClick={() => {
-                      const newTitle = prompt(
-                        "Veuillez entrer le nouveau titre:",
-                        article.title
-                      );
-                      const newContent = prompt(
-                        "Veuillez entrer le contenu de l'article:",
-                        article.content
-                      );
-                      if (newTitle && newContent) {
-                        updateArticle(article.id, {
-                          title: newTitle,
-                          content: newContent,
-                        });
-                      }
-                    }}
-                  >
-                    Editer
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                    onClick={() => {
-                      deleteArticle(article.id);
-                    }}
-                  >
-                    Supprimer
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </ul>
+    <div className="space-y-4">
+      {articles.map((article) => (
+        <div key={article.id} className="bg-white p-4 rounded-lg shadow">
+          {editingId === article.id ? (
+            // Formulaire d'édition
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={editForm.title || ''}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                className="w-full p-2 border rounded"
+                placeholder="Titre"
+              />
+              <textarea
+                value={editForm.content || ''}
+                onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                className="w-full p-2 border rounded"
+                rows={4}
+                placeholder="Contenu"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleUpdate(article.id)}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  Sauvegarder
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Affichage normal
+            <>
+              <h2 className="text-xl font-bold mb-2">{article.title}</h2>
+              <p className="text-gray-600 mb-4">{article.content}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(article)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Modifier
+                </button>
+                <button
+                  onClick={() => handleDelete(article.id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

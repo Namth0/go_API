@@ -47,7 +47,7 @@ func (s *ArticleService) Update(article *models.Article) error {
 	article.Title = strings.TrimSpace(article.Title)
 	article.Content = strings.TrimSpace(article.Content)
 
-	return s.repo.Update(article)
+	return s.repo.Update(article.ID.String(), article)
 }
 
 func (s *ArticleService) Delete(id string) error {
@@ -56,4 +56,12 @@ func (s *ArticleService) Delete(id string) error {
 		return errors.New("article non trouvé")
 	}
 	return s.repo.Delete(id)
+}
+
+func (s *ArticleService) DeleteArticle(id string) error {
+	return s.repo.Delete(id)
+}
+
+func (s *ArticleService) UpdateArticle(id string, article *models.Article) error {
+	return s.repo.Update(id, article)
 }

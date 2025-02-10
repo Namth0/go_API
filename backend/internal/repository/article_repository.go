@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"mon-api/internal/models"
 	"strconv"
-	"time"
+
+	"github.com/google/uuid"
 
 	"gorm.io/gorm"
 )
@@ -57,42 +58,29 @@ func (r *ArticleRepository) Create(article *models.Article) error {
 	return nil
 }
 
-func (r *ArticleRepository) Update(article *models.Article) error {
-	fmt.Printf("Updating article with ID: %v\n", article.ID)
-
-	// Vérifier si l'article existe avant la mise à jour
-	var existingArticle models.Article
-	if err := r.db.First(&existingArticle, article.ID).Error; err != nil {
-		return fmt.Errorf("article non trouvé: %v", err)
+func (r *ArticleRepository) Update(id string, article *models.Article) error {
+	// Convertir la chaîne ID en UUID
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return err
 	}
 
-	// Mise à jour directe dans la base de données
-	result := r.db.Model(&existingArticle).Updates(map[string]interface{}{
-		"title":      article.Title,
-		"content":    article.Content,
-		"updated_at": time.Now(),
-	})
-
-	if result.Error != nil {
-		return fmt.Errorf("erreur lors de la mise à jour: %v", result.Error)
+	article.ID = uid
+	result := r.db.Save(article)
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
-
-	// Recharger l'article pour avoir les valeurs à jour
-	if err := r.db.First(article, article.ID).Error; err != nil {
-		return fmt.Errorf("erreur lors du rechargement: %v", err)
-	}
-
-	return nil
+	return result.Error
 }
 
 func (r *ArticleRepository) Delete(id string) error {
-	// Convertir l'ID string en int64
-	idInt, err := strconv.ParseInt(id, 10, 64)
+	// Convertir la chaîne ID en UUID
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		return fmt.Errorf("ID invalide: %v", err)
+		return err
 	}
 
-	result := r.db.Delete(&models.Article{}, idInt)
+	result := r.db.Delete(&models.Article{}, uid)
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}

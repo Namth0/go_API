@@ -4,14 +4,17 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Article struct {
-	ID        string    `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Title     string    `json:"title" gorm:"type:varchar(255);not null;index"`
-	Content   string    `json:"content" gorm:"type:text;not null"`
-	CreatedAt time.Time `json:"created_at" gorm:"type:timestamp;not null;default:current_timestamp"`
-	UpdatedAt time.Time `json:"updated_at" gorm:"type:timestamp;not null;default:current_timestamp"`
+	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Title     string    `gorm:"size:255;not null" json:"title"`
+	Content   string    `gorm:"type:text;not null" json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // Validate vérifie le format des données de l'article
@@ -35,4 +38,11 @@ func (a *Article) Validate() error {
 // TableName spécifie le nom de la table
 func (Article) TableName() string {
 	return "articles"
+}
+
+func (a *Article) BeforeCreate(tx *gorm.DB) error {
+	if a.ID == uuid.Nil {
+		a.ID = uuid.New()
+	}
+	return nil
 }
