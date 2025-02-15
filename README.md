@@ -41,7 +41,7 @@ Martin RIGAUX
 
    - [x] Implémentation des **RBAC** Kubernetes pour la gestion des accès.
    - [x] Chiffrement des échanges entre les services avec **mTLS** via Istio.
-   - [ ] Implémentation de HTTPs
+   - [x] Implémentation de HTTPs
 
 6. **Déploiement Cloud (Optionnel) (18/20)**
    - [ ] Déploiement de l’application dans une infrastructure cloud pour améliorer la scalabilité et la résilience.

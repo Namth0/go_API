@@ -4,7 +4,6 @@ import (
 	"log"
 	"mon-api/config"
 	"mon-api/internal/handlers"
-	"mon-api/internal/models"
 	"mon-api/internal/repository"
 	"mon-api/internal/service"
 	"mon-api/pkg/middleware"

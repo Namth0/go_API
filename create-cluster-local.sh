@@ -5,7 +5,7 @@ minikube addons enable ingress
 
 # BUILD DES IMAGES DOCKER
 docker build -t nextjs-frontend:latest -f ./frontend/Dockerfile.prod ./frontend/
-docker build -t go-backend:latest ./backend/
+docker build -t go-backend:latest -f ./backend/Dockerfile.prod ./backend/
 echo "\nLes Images docker ont été construites avec succès\n"
 
 # CHARGEMENT DES IMAGES DOCKER DANS LE CLUSTER MINIKUBE
