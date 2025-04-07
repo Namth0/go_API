@@ -1,18 +1,69 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"mon-api/config"
 	"mon-api/internal/handlers"
 	"mon-api/internal/repository"
 	"mon-api/internal/service"
 	"mon-api/pkg/middleware"
+	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
+// AuthClient handles communication with the auth service
+type AuthClient struct {
+	BaseURL string
+}
 
+// NewAuthClient creates a new auth client
+func NewAuthClient() *AuthClient {
+	authServiceURL := os.Getenv("AUTH_SERVICE_URL")
+	if authServiceURL == "" {
+		// Default for local development
+		authServiceURL = "http://localhost:8081/api/v1"
+	}
+
+	return &AuthClient{
+		BaseURL: authServiceURL,
+	}
+}
+
+// ValidateToken validates a token with the auth service
+func (a *AuthClient) ValidateToken(token string) (bool, error) {
+	data := map[string]string{
+		"token": token,
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return false, err
+	}
+
+	resp, err := http.Post(a.BaseURL+"/validate-token",
+		"application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Valid bool                   `json:"valid"`
+		User  map[string]interface{} `json:"user"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, err
+	}
+
+	return result.Valid, nil
+}
+
+func main() {
 	// Utiliser _ pour ignorer dbConfig si nous ne l'utilisons pas
 	db, _, err := config.InitDB()
 	if err != nil {
@@ -22,18 +73,28 @@ func main() {
 		log.Fatal("Failed to initialize database connection")
 	}
 	log.Println("Successfully connected to database")
+
+	// Initialize auth client for inter-service communication
+	authClient := NewAuthClient()
+
 	router := gin.Default()
 	router.Use(middleware.Logger())
 	router.Use(middleware.CorsMiddleware())
 
-	// Initialisation des dépendances
+	// Initialisation des dépendances pour les articles
 	articleRepo := repository.NewArticleRepository(db)
 	articleService := service.NewArticleService(articleRepo)
 	articleHandler := handlers.NewArticleHandler(articleRepo, articleService)
 
+	// Initialisation des dépendances pour les utilisateurs
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handlers.NewUserHandler(userRepo, userService)
+
 	// Routes
 	v1 := router.Group("/api/v1")
 	{
+		// Routes pour les articles
 		articles := v1.Group("/articles")
 		{
 			articles.GET("", articleHandler.GetArticles)
@@ -42,23 +103,54 @@ func main() {
 			articles.PUT("/:id", articleHandler.UpdateArticle)
 			articles.DELETE("/:id", articleHandler.DeleteArticle)
 		}
+
+		// Routes pour les utilisateurs
+		users := v1.Group("/users")
+		{
+			users.GET("", userHandler.GetUsers)
+			users.GET("/:id", userHandler.GetUser)
+			users.POST("", userHandler.CreateUser)
+			users.PUT("/:id", userHandler.UpdateUser)
+			users.DELETE("/:id", userHandler.DeleteUser)
+		}
+
+		// Routes pour l'authentification
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/login", userHandler.Login)
+		}
+
+		// New endpoint demonstrating inter-service communication
+		v1.GET("/check-auth", func(c *gin.Context) {
+			token := c.GetHeader("Authorization")
+			if token == "" {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "No token provided"})
+				return
+			}
+
+			// Call the auth service to validate the token
+			valid, err := authClient.ValidateToken(token)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Failed to validate token with auth service",
+					"details": err.Error(),
+				})
+				return
+			}
+
+			if !valid {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"message":                 "Token is valid",
+				"auth_service_connection": "successful",
+			})
+		})
 	}
 
-	// fakeArticles := []models.Article{
-	// 	{Title: "Comment Vivaldi est passé de la gloire à l'oubli, puis au statut d'icône", Content: "Les Quatre Saisons sont aussi célèbres qu'un morceau de musique classique peut l'être. Cette collection intemporelle de quatre concertos, chacun incarnant une saison différente, semble aussi entraînante et enivrante aujourd'hui que lorsque Antonio Vivaldi l'a révélée au public en 1725. L'œuvre compte parmi les morceaux de musique classique les plus appréciés jamais composés. Cependant, avant la Seconde Guerre mondiale, seuls quelques spécialistes de l'histoire de la musique en avaient entendu parler. Même le nom de Vivaldi n'était alors qu'une obscure note de bas de page dans certains manuels."},
-	// 	{Title: "Voyage : une journée au Caire, l'éclectique capitale égyptienne", Content: "Au Caire, durant la haute saison hivernale, le lever du soleil a lieu un peu avant sept heures. L'accès au site des pyramides de Gizeh, qui se trouve à quinze kilomètres à l'ouest du Caire, ouvre à huit heures toute l'année. Cette possibilité de commencer dès l'aube vous donne davantage de temps et de latitude pour profiter intégralement de la sidération que procurent ces monuments vieux de 4 500 ans et leur compagnon vigilant, le Sphinx de Gizeh. La pyramide de Khéops, seule survivante des Sept merveilles du monde antique, serait constituée de 2,3 millions de blocs de pierre environ."},
-	// 	{Title: "Ce que votre âge biologique révèle sur votre santé", Content: "Des chercheurs chinois ont mis au point un outil qui utilise l'intelligence artificielle (IA) pour analyser des images du visage, de la langue et de la rétine afin de déterminer l'âge biologique d'un individu. Cette technologie offre un aperçu de la santé et de l'état de nos cellules, tissus et organes, et de notre prédisposition à développer certaines maladies chroniques."},
-	// }
-
-	// for _, article := range fakeArticles {
-	// 	if err := db.Create(&article).Error; err != nil {
-	// 		log.Printf("Erreur durant l'insertion des faux articles: %v", err)
-	// 	}
-	// }
-
-	// log.Println("Faux articles insérés avec succès!")
-
-	log.Printf("Server is running on http://localhost:8080")
+	log.Printf("Main API service running on http://localhost:8080")
 
 	router.GET("/api/v1/test", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "API is working"})
