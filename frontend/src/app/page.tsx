@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Article, getArticles } from '../utils/api';
-import ArticleList from "../components/ArticleList";
-import CreateArticleForm from "../components/CreateArticleForm";
-import Navbar from "../components/Navbar";
+import ArticleList from "../components/article-list";
+import CreateArticleForm from "../components/create-article-form";
+import Navbar from "../components/nav-bar";
 import { useAuth } from "../contexts/AuthContext";
 import Link from "next/link";
 
@@ -13,28 +13,25 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
-  const fetchArticles = async () => {
+  async function fetchArticles() {
     try {
       if (!isAuthenticated) return; // Ne pas charger les articles si non connecté
-      
       const data = await getArticles();
       setArticles(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
       console.error('Error fetching articles:', err);
     }
-  };
-
+  }
   useEffect(() => {
     fetchArticles();
-  }, [isAuthenticated]); // Recharger quand le statut d'authentification change
+  }, [isAuthenticated]);
 
   if (error) return <div>Erreur: {error}</div>;
   
   return (
     <>
       <Navbar />
-      
       <main className="container mx-auto p-4">
         <h1 className="text-3xl font-bold mb-4">Gestion des articles</h1>
         
@@ -52,7 +49,7 @@ export default function Home() {
                 Se connecter
               </Link>
               <Link href="/register" className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600">
-                S'inscrire
+                S&apos;inscrire
               </Link>
             </div>
           </div>
@@ -67,4 +64,4 @@ export default function Home() {
       </footer>
     </>
   );
-}
+  }

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-api
+  namespace: web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-api
+  template:
+    metadata:
+      labels:
+        app: go-api
+    spec:
+      containers:
+        - name: go-api
+          image: pocwebapp/back-poc-web-app-othman-martin:latest
+          envFrom:
+            - configMapRef:
+                name: go-api-env
+          ports:
+            - containerPort: 8080

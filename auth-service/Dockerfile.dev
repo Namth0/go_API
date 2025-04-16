@@ -1,0 +1,8 @@
+# Build stage
+FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go mod download
+
+EXPOSE 8081
+CMD ["go", "run", "main.go"]

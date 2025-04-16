@@ -1,20 +1,14 @@
 "use client";
 
 import React from "react";
-import RegisterForm from "../../components/RegisterForm";
+import RegisterForm from "../../components/register-form";
 import Link from "next/link";
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-gray-100 py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-8">
-            POC WEB APP - Créer un compte
-          </h1>
-          
-          <RegisterForm />
-          
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="max-w-md w-full px-4">
+      <RegisterForm />
           <div className="mt-6 text-center">
             <p>
               Déjà un compte ?{" "}
@@ -22,11 +16,9 @@ export default function RegisterPage() {
                 Se connecter
               </Link>
             </p>
-            
             <Link href="/" className="text-gray-500 hover:underline block mt-4">
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Link>
-          </div>
         </div>
       </div>
     </div>

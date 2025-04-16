@@ -1,0 +1,92 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: webapp
+      POSTGRES_PASSWORD: OthmanEtMartin
+      POSTGRES_DB: pocwebapp
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webapp -d pocwebapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: 
+      context: ./auth-service
+      dockerfile: Dockerfile.dev
+    container_name: auth_service_container
+    restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: webapp
+      DB_PASSWORD: OthmanEtMartin
+      DB_NAME: pocwebapp
+      PORT: 8081
+      GIN_MODE: debug
+    networks:
+      - app-network
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: backend_container
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - auth-service
+    environment:
+      DB_HOST: postgres
+      GIN_MODE: debug
+      ALLOWED_ORIGINS: "http://localhost:3000"
+      AUTH_SERVICE_URL: "http://auth-service:8081/api/v1"
+    networks:
+      - app-network
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: frontend_container
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - auth-service
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:8080/api/v1"        # Pour le navigateur
+      NEXT_PUBLIC_API_BASE_URL_INTERNAL: "http://backend:8080/api/v1" # Pour SSR
+      NEXT_PUBLIC_AUTH_SERVICE_URL: "http://localhost:8081/api/v1"    # Pour le navigateur
+      NEXT_PUBLIC_AUTH_SERVICE_URL_INTERNAL: "http://auth-service:8081/api/v1" # Pour SSR
+      NODE_ENV: development
+      NEXT_PUBLIC_DEBUG: "true"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

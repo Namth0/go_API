@@ -11,7 +11,7 @@ Martin RIGAUX
 - **Orchestration** : Kubernetes
 - **Bases de données** : PostgreSQL
 - **Service Mesh** : Istio
-- **Cloud (optionnel)** :
+- **Cloud** : AWS via Terraform
 
 ## Fonctionnalités
 
@@ -21,7 +21,7 @@ Martin RIGAUX
    - [x] Création d'une image Docker via un `Dockerfile`.
    - [x] Créer un déploiement Kubernetes
    - [x] Créer un service Kubernetes
-   - [ ] Publication de l'image sur Docker Hub.
+   - [x] Publication de l'image sur Docker Hub.
 
 2. **Déploiement Kubernetes (12/20)**
 
@@ -44,7 +44,7 @@ Martin RIGAUX
    - [x] Implémentation de HTTPs
 
 6. **Déploiement Cloud (Optionnel) (18/20)**
-   - [ ] Déploiement de l'application dans une infrastructure cloud pour améliorer la scalabilité et la résilience.
+   - [x] Déploiement de l'application dans une infrastructure cloud pour améliorer la scalabilité et la résilience.
 
 ## Architecture des Microservices
 
@@ -57,7 +57,7 @@ Notre application est maintenant construite autour de deux services backend dist
 
 2. **Auth Service** (Port 8081)
    - Gère l'authentification des utilisateurs
-   - Fournit API pour inscription et connexion
+   - Fournit une API pour l'inscription et la connexion
    - Stocke les informations utilisateurs dans PostgreSQL
    - Expose des endpoints pour la validation de tokens
 

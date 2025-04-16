@@ -7,7 +7,7 @@ const AUTH_URL = typeof window === 'undefined'
   : process.env.NEXT_PUBLIC_AUTH_SERVICE_URL || "http://localhost:8081/api/v1";     // URL pour le navigateur
 
 export interface Article {
-  id: string;
+  id?: string;
   title: string;
   content: string;
   created_at?: string;
@@ -76,7 +76,7 @@ export async function getArticle(id: number): Promise<Article> {
   return response.json();
 }
 
-export async function createArticle(article: Article): Promise<any> {
+export async function createArticle(article: Article): Promise<Article> {
   try {
     checkAuth();
 

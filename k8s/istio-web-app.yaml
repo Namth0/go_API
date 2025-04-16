@@ -1,8 +1,0 @@
-apiVersion: security.istio.io/v1beta1
-kind: PeerAuthentication
-metadata:
-  name: default
-  namespace: web-app
-spec:
-  mtls:
-    mode: STRICT # Enforces mTLS for all services in the namespace
