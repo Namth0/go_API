@@ -36,6 +36,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-3
 
+      - name: Attach Policy
+        id: attach
+        run: |
+            # Get AWS account ID
+            AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+            
+            # Check if policy exists
+            if ! aws iam get-policy --policy-arn "arn:aws:iam::637423251830:policy/EBS-CSI-Policy" 2>/dev/null; then
+                echo "Creating new policy..."
+                aws iam create-policy --policy-name EBS-CSI-Policy --policy-document file://iam-policy.json
+            else
+                echo "Policy already exists"
+            fi
+            
+            # Check if policy is already attached
+            if ! aws iam list-attached-user-policies --user-name eks-web-app | grep -q "EBS-CSI-Policy"; then
+                echo "Attaching policy to user..."
+                aws iam attach-user-policy --user-name eks-web-app --policy-arn "arn:aws:iam::637423251830:policy/EBS-CSI-Policy"
+            else
+                echo "Policy already attached to user"
+            fi
+     
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:

@@ -1,0 +1,24 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetPolicy",
+                "iam:CreateRole",
+                "iam:AttachRolePolicy",
+                "iam:PutRolePolicy",
+                "iam:GetRole",
+                "iam:ListRolePolicies",
+                "iam:ListAttachedRolePolicies",
+                "iam:DeleteRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:DeleteRole"
+            ],
+            "Resource": [
+                "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
+                "arn:aws:iam::*:role/AmazonEKSTFEBSCSIRole-*"
+            ]
+        }
+    ]
+}
