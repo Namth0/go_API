@@ -38,10 +38,10 @@ resource "aws_iam_role" "github_actions" {
         Condition = {
           StringLike = {
             "token.actions.githubusercontent.com:sub" = "repo:Namth0/go_API:*",
-            "token.actions.githubusercontent.com:ref": "refs/heads/main",
+            "token.actions.githubusercontent.com:ref" : "refs/heads/main",
           },
-          StringEquals: {
-            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+          StringEquals : {
+            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
           }
         }
       }
@@ -130,14 +130,6 @@ module "eks" {
       desired_size = 1
     }
   }
-  manage_aws_auth = true
-  aws_auth_users = [
-    {
-      userarn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/eks-web-app"
-      username = "eks-web-app"
-      groups   = ["system:masters"]
-    }
-  ]
 }
 
 
