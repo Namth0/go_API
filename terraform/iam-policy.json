@@ -1,35 +1,48 @@
 {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": [
-          "iam:GetPolicy",
-          "iam:CreateRole",
-          "iam:AttachRolePolicy",
-          "iam:PutRolePolicy",
-          "iam:GetRole",
-          "iam:ListRolePolicies",
-          "iam:ListAttachedRolePolicies",
-          "iam:DeleteRolePolicy",
-          "iam:DetachRolePolicy",
-          "iam:DeleteRole"
-        ],
-        "Resource": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
-          "arn:aws:iam::*:role/AmazonEKSTFEBSCSIRole-*"
-        ]
-      },
-      {
-        "Effect": "Allow",
-        "Action": [
-          "iam:CreatePolicy",
-          "iam:GetPolicy",
-          "iam:AttachUserPolicy",
-          "iam:ListAttachedUserPolicies",
-          "sts:GetCallerIdentity"
-        ],
-        "Resource": "*"
-      }
-    ]
-  }
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeSecurityGroups"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:CreateRole",
+        "iam:AttachRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:GetRole",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:DeleteRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:DeleteRole"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreatePolicy",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:AttachUserPolicy",
+        "iam:ListAttachedUserPolicies"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "sts:GetCallerIdentity",
+      "Resource": "*"
+    }
+  ]
+}

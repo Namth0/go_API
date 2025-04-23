@@ -103,3 +103,13 @@ module "irsa-ebs-csi" {
   role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
+
+resource "aws_iam_policy" "eks_provisioning" {
+  name   = "EBS-CSI-Policy"
+  policy = file("iam-policy.json")
+}
+
+resource "aws_iam_user_policy_attachment" "attach_policy_to_user" {
+  user       = "eks-web-app"
+  policy_arn = aws_iam_policy.eks_provisioning.arn
+}
