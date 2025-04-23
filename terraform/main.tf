@@ -11,6 +11,47 @@ data "aws_availability_zones" "available" {
   }
 }
 
+resource "aws_iam_openid_connect_provider" "github" {
+  url = "https://token.actions.githubusercontent.com"
+
+  client_id_list = [
+    "sts.amazonaws.com"
+  ]
+
+  thumbprint_list = [
+    "6938fd4d98bab03faadb97b34396831e3780aea1" # GitHub root CA
+  ]
+}
+
+resource "aws_iam_role" "github_actions" {
+  name = "GitHubActionsEKSRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.github.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = "repo:Namth0/go_API:*"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_admin" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+
+
 locals {
   cluster_name = "web-app-master-1-cluster-eks"
 }
@@ -85,6 +126,14 @@ module "eks" {
       desired_size = 1
     }
   }
+  manage_aws_auth = true
+  aws_auth_users = [
+    {
+      userarn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/eks-web-app"
+      username = "eks-web-app"
+      groups   = ["system:masters"]
+    }
+  ]
 }
 
 
@@ -104,12 +153,20 @@ module "irsa-ebs-csi" {
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
 
-resource "aws_iam_policy" "eks_provisioning" {
-  name   = "EBS-CSI-Policy"
-  policy = file("iam-policy.json")
-}
+resource "helm_release" "ebs_csi_driver" {
+  name       = "aws-ebs-csi-driver"
+  namespace  = "kube-system"
+  repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
+  chart      = "aws-ebs-csi-driver"
+  version    = "2.20.0"
 
-resource "aws_iam_user_policy_attachment" "attach_policy_to_user" {
-  user       = "eks-web-app"
-  policy_arn = aws_iam_policy.eks_provisioning.arn
+  set {
+    name  = "controller.serviceAccount.create"
+    value = "false"
+  }
+
+  set {
+    name  = "controller.serviceAccount.name"
+    value = "ebs-csi-controller-sa"
+  }
 }

@@ -4,44 +4,10 @@
     {
       "Effect": "Allow",
       "Action": [
-        "ec2:DescribeAvailabilityZones",
-        "ec2:DescribeVpcs",
-        "ec2:DescribeSubnets",
-        "ec2:DescribeSecurityGroups"
+        "eks:DescribeCluster",
+        "eks:ListClusters",
+        "eks:AccessKubernetesApi"
       ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "iam:GetPolicy",
-        "iam:GetPolicyVersion",
-        "iam:CreateRole",
-        "iam:AttachRolePolicy",
-        "iam:PutRolePolicy",
-        "iam:GetRole",
-        "iam:ListRolePolicies",
-        "iam:ListAttachedRolePolicies",
-        "iam:DeleteRolePolicy",
-        "iam:DetachRolePolicy",
-        "iam:DeleteRole"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "iam:CreatePolicy",
-        "iam:GetPolicy",
-        "iam:GetPolicyVersion",
-        "iam:AttachUserPolicy",
-        "iam:ListAttachedUserPolicies"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": "sts:GetCallerIdentity",
       "Resource": "*"
     }
   ]
