@@ -36,26 +36,40 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-3
 
-      - name: Attach Policy
+      - name: Attach or Update Policy
         id: attach
         run: |
+            set -e
             # Get AWS account ID
             AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-            
-            # Check if policy exists
-            if ! aws iam get-policy --policy-arn "arn:aws:iam::637423251830:policy/EBS-CSI-Policy" 2>/dev/null; then
-                echo "Creating new policy..."
-                aws iam create-policy --policy-name EBS-CSI-Policy --policy-document file://iam-policy.json
+            POLICY_NAME="EBS-CSI-Policy"
+            POLICY_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${POLICY_NAME}"
+  
+            echo "Checking if policy exists..."
+            if aws iam get-policy --policy-arn "$POLICY_ARN" >/dev/null 2>&1; then
+              echo "Policy exists. Creating new version..."
+              
+              aws iam create-policy-version \
+                --policy-arn "$POLICY_ARN" \
+                --policy-document file://iam-policy.json \
+                --set-as-default
+  
+              echo "New policy version set as default."
             else
-                echo "Policy already exists"
+              echo "Policy does not exist. Creating policy..."
+              aws iam create-policy \
+                --policy-name "$POLICY_NAME" \
+                --policy-document file://iam-policy.json
             fi
-            
-            # Check if policy is already attached
-            if ! aws iam list-attached-user-policies --user-name eks-web-app | grep -q "EBS-CSI-Policy"; then
-                echo "Attaching policy to user..."
-                aws iam attach-user-policy --user-name eks-web-app --policy-arn "arn:aws:iam::637423251830:policy/EBS-CSI-Policy"
+  
+            echo "Checking if policy is already attached to user..."
+            if ! aws iam list-attached-user-policies --user-name eks-web-app | grep -q "$POLICY_NAME"; then
+              echo "Attaching policy to user..."
+              aws iam attach-user-policy \
+                --user-name eks-web-app \
+                --policy-arn "$POLICY_ARN"
             else
-                echo "Policy already attached to user"
+              echo "Policy already attached to user."
             fi
      
       - name: Setup Terraform
@@ -177,6 +191,9 @@ jobs:
           kubectl delete -f k8s/services/ --ignore-not-found=true
           kubectl delete -f k8s/deployments/ --ignore-not-found=true
           kubectl delete -f k8s/ --ignore-not-found=true
+          aws iam delete-policy-version \
+          --policy-arn $POLICY_ARN \
+          --version-id v1
           
         continue-on-error: true
         
