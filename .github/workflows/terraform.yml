@@ -22,6 +22,7 @@ jobs:
     defaults:
       run:
         shell: bash
+        working-directory: './terraform'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,48 +30,43 @@ jobs:
           fetch-depth: 0
           
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-3
-          
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
-          
+
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
-        working-directory: ./terraform
-        
+
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ./terraform
-        
+      
       - name: Terraform Validate
         id: validate
         run: terraform validate
-        working-directory: ./terraform
         
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color
-        working-directory: ./terraform
         continue-on-error: true
         
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.destroy == false
         run: terraform apply -auto-approve
-        working-directory: ./terraform
         
       - name: Déploiement de kubernetes sur AWS
         if: github.ref == 'refs/heads/main' && github.event_name == 'push' && inputs.destroy == false
         run: |
           aws eks update-kubeconfig --name web-app-master-1-cluster-eks --region eu-west-3
-          
+
           # Installation de kubectl
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
@@ -116,6 +112,7 @@ jobs:
     defaults:
       run:
         shell: bash
+        working-directory: './terraform'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -123,7 +120,7 @@ jobs:
           fetch-depth: 0
           
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -137,7 +134,6 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-        working-directory: ./terraform
         
       - name: Nettoyage des ressources Kubernetes avant destruction
         run: |
@@ -164,4 +160,3 @@ jobs:
         
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
-        working-directory: ./terraform
