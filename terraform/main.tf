@@ -38,7 +38,6 @@ resource "aws_iam_role" "github_actions" {
         Condition = {
           StringLike = {
             "token.actions.githubusercontent.com:sub" = "repo:Namth0/go_API:*",
-            "token.actions.githubusercontent.com:ref" : "refs/heads/main",
           },
           StringEquals : {
             "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
