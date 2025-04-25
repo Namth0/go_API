@@ -48,12 +48,28 @@ resource "aws_iam_role" "github_actions" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "github_actions_admin" {
-  role       = aws_iam_role.github_actions.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+resource "aws_iam_role_policy" "github_actions" {
+  name = "GitHubActionsEKSPolicy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:*",
+          "ec2:*",
+          "iam:*",
+          "cloudformation:*",
+          "autoscaling:*",
+          "elasticloadbalancing:*"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
-
-
 
 locals {
   cluster_name = "web-app-master-1-cluster-eks"
@@ -94,6 +110,20 @@ module "eks" {
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
 
+  # Enable encryption at rest
+  cluster_encryption_config = {
+    provider_key_arn = aws_kms_key.eks.arn
+    resources        = ["secrets"]
+  }
+
+  # Add proper tagging
+  tags = {
+    Environment = "production"
+    Project     = "web-app"
+    ManagedBy   = "terraform"
+    Owner       = "devops"
+  }
+
   cluster_addons = {
     aws-ebs-csi-driver = {
       service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
@@ -113,20 +143,50 @@ module "eks" {
       name = "node-group-1"
 
       instance_types = ["t3.small"]
+      capacity_type  = "SPOT"  # Use spot instances for cost savings
 
       min_size     = 1
-      max_size     = 1
+      max_size     = 3
       desired_size = 1
+
+      # Add auto-scaling based on CPU and memory
+      scaling_config = {
+        desired_size = 1
+        max_size     = 3
+        min_size     = 1
+      }
+
+      # Add proper tagging
+      tags = {
+        Environment = "production"
+        Project     = "web-app"
+        ManagedBy   = "terraform"
+      }
     }
 
     two = {
       name = "node-group-2"
 
       instance_types = ["t3.small"]
+      capacity_type  = "SPOT"  # Use spot instances for cost savings
 
       min_size     = 1
-      max_size     = 1
+      max_size     = 3
       desired_size = 1
+
+      # Add auto-scaling based on CPU and memory
+      scaling_config = {
+        desired_size = 1
+        max_size     = 3
+        min_size     = 1
+      }
+
+      # Add proper tagging
+      tags = {
+        Environment = "production"
+        Project     = "web-app"
+        ManagedBy   = "terraform"
+      }
     }
   }
 }
@@ -164,4 +224,21 @@ resource "helm_release" "ebs_csi_driver" {
     name  = "controller.serviceAccount.name"
     value = "ebs-csi-controller-sa"
   }
+}
+
+# Add KMS key for EKS encryption
+resource "aws_kms_key" "eks" {
+  description             = "KMS key for EKS cluster encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name        = "eks-encryption-key"
+    Environment = "production"
+  }
+}
+
+resource "aws_kms_alias" "eks" {
+  name          = "alias/eks-encryption-key"
+  target_key_id = aws_kms_key.eks.key_id
 }
