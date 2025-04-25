@@ -227,6 +227,9 @@ En plus de l'application web, il nous était demandé de faire des labs Google a
 Comme demandé, j'ai terminé les deux labs à 100%. Le lab Terraform nous a été très utile pour la partie IaC du projet. 
 ![Photo Labs Martin](./assets/img/google-labs-martin.png)
 
+### Labs Othman BENCHERIF
+![Photo Labs Othman](./assets/img/google-labs-Othman.png)
+
 ## Critères d'évaluations (par ordre décroissant d'importance) :
 
 - Intégration complète d'un maximum de technologies (Web Services, Docker, Kubernetes…)
