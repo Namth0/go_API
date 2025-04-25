@@ -228,7 +228,7 @@ Comme demandé, j'ai terminé les deux labs à 100%. Le lab Terraform nous a ét
 ![Photo Labs Martin](./assets/img/google-labs-martin.png)
 
 ### Labs Othman BENCHERIF
-![Photo Labs Othman](./assets/img/google-labs-Othman.png)
+![Photo Labs Othman](./assets/img/google-labs-Othman.PNG)
 
 ## Critères d'évaluations (par ordre décroissant d'importance) :
 
