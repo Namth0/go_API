@@ -103,7 +103,7 @@ Le secrets sont gérés par des ConfigMaps. Par exemple le mot de passe de la ba
 #### Diagramme de l'infrastructure complète
 ```mermaid
 graph TD
-   D4(["<img src='https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg' width='80' height='80' />"])
+   D4(["<img src='./assets/img/aws.svg' width='80' height='80' />"])
    subgraph TF[Infrastructure Terraform]
    %% Tunnel visuel
 
