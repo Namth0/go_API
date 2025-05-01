@@ -1,17 +1,40 @@
-<center><img src='./frontend/public/img/logo_paris_cite_noir.png' width='300' height='100' /></center>
+<center><img src='./frontend/public/img/logo_paris_cite_noir.png' width='300' height='100' alt='Logo Paris Cité' /></center>
 
 # Projet Programmation Web - M1 Cybersécurité
 
 Othman BENCHERIF
 Martin RIGAUX
 
+## Table des matières
+
+1. [Introduction](#1-introduction)
+2. [Architecture Globale](#2-architecture-globale)
+   - [2.1 Frontend (Next.js)](#21-frontend-nextjs)
+     - [2.1.1 Page de Connexion](#211-page-de-connexion)
+     - [2.1.2 Page d'enregistrement](#212-page-denregistrement)
+     - [2.1.3 Page d'accueil](#213-page-daccueil)
+     - [2.1.4 Gestion des articles](#214-gestion-des-articles)
+   - [2.2 Services Backend (Go)](#22-services-backend-go)
+     - [2.2.1 Service d'Articles API](#221-service-darticles-api-port-8080)
+     - [2.2.2 Service d'Authentification](#222-service-dauthentification-port-8081)
+   - [2.3 Infrastructure](#23-infrastructure)
+   - [2.4 Déploiement](#24-déploiement)
+     - [2.4.1 Environnement Local](#241-environnement-local)
+     - [2.4.2 Environnement Minikube](#242-environnement-minikube)
+     - [2.4.3 Environnement Cloud](#243-environnement-cloud)
+3. [Technologies Utilisées](#3-technologies-utilisées)
+4. [Respect du cahier des charges](#respect-du-cahier-des-charges)
+5. [Google Labs](#-google-labs)
+
 ## 1. Introduction
 
 Notre projet est une application de gestion d'articles de presse permettant aux utilisateurs de créer, modifier et supprimer des articles. L'application possède une interface graphique écrite en Next.js.Le backend est divisé en deux partie. Une partie gestions des articles et une partie gestions authentification. Le tout est orchestré avec Kubernetes de manière sécurisée. 
+
 ## 2. Architecture Globale
 
 
 ### 2.1 Frontend (Next.js)
+
 Nous avons décidés de coder le site internet en Typescript en utilisant le framework Next.js. L'un d'entre nous était familier avec ce framework ce qui à permis de nous décider.
 
 Le site contient plusieurs pages, une page de connexion et d'enregistremment ainsi que la page principale de gestion des articles.
@@ -32,18 +55,23 @@ Nous avons créé plusieurs fonctions afin d'intéragier avec le back-end. Ces f
 | _deleteArticle()_ | Supprime un article | DELETE |
 
 #### 2.1.1 Page de Connexion
+
 Cette page est reliée directement au backend qui lui même est connecté à la base de données _Postgres_.
 ![Page de Connexion](./assets/img/connection.png)
+
 #### 2.1.2 Page d'enregistrement
+
 Pareil que la page de connexion, cette page est reliée au backend qui va ensuite enregistrer le nouvel utilisateur dans la base de données. 
 ![Page d'Enregistrement](./assets/img/register.png)
 
 #### 2.1.3 Page d'accueil
+
 La page d'accueil ne peut être accéder si l'utilisateur ne sait pas connecté. Il devra soit s'enregistrer via la page d'enregistrement, soit se connecter s'il possède déjà un compte. 
 
 ![Page Bloquée](./assets/img/article-bloqué.png)
 
 #### 2.1.4 Gestion des articles
+
 Une fois que l'utilisateur s'est connecté il peut ajouter et supprimer des articles. Ils sont alors listés juste en dessous avec la possibilité de les modifier ou de les supprimer. Nous utilisons ici les fonctionnalités **POST** et **UPDATE** du backend.
 ![Page Gestion d'Articles](./assets/img/gestion-articles.png)
 
@@ -54,6 +82,7 @@ Une fois que l'utilisateur s'est connecté il peut ajouter et supprimer des arti
 Ce service fournit un API afin de gérer des articles de presse. L'API correspond à l'acronyme **CRUD** afin de faciliter l'intéraction avec le front-end. Le service est relié directement à la base de données.
 
 ##### Routes pour les articles
+
 | Route | Méthode | Description |
 |-------|---------|-------------|
 | `/articles` | GET | Récupérer tous les articles |
@@ -69,10 +98,13 @@ Ce service fournit un API afin de gérer des articles de presse. L'API correspon
   - `backend/config/` : Configuration de l'application
 
 #### 2.2.2 Service d'Authentification (Port 8081)
+
 Ce service fournit une API pour que les utilisateurs s'inscrive sur le site web. Le service est connecté directement à la base de données afin d'enregistrer les données de façon permanent. 
 
 ##### Routes pour les utilisateurs
+
 Les routes API sont les suivantes:
+
 | Route | Méthode | Description |
 |-------|---------|-------------|
 | `/login` | POST | Tentative de connexion |
@@ -101,6 +133,7 @@ L'accès au site se fait via un ingress controller qui redirige vers les requêt
 Le secrets sont gérés par des ConfigMaps. Par exemple le mot de passe de la base de données _Postgres_ est hash est stocké dans un fichier ConfigMaps réservé. 
 
 #### Diagramme de l'infrastructure complète
+
 ```mermaid
 graph TD
    D4([Amazon Web Services])
@@ -160,24 +193,38 @@ La troisième manière est de déployer le cluster via Terraform sur les serveur
 Docker Compose pour le développement: [docker-compose.yaml](./docker-compose.yaml)
 
 Se placer à la racine du dossier et executer la commande:
-```
+
+```bash
 docker compose up -d --build
 ```
+
 Vous pouvez ensuite accèder au site internet à l'adresse: `http://localhost:3000` et faire des requetes sur l'API à l'adresse: `http://localhost:8080/api/v1`.
 
 ### 2.4.2 Environnement Minikube
 
 Script d'automatisation pour le déploiement: [create-cluster-local.sh](./minikube/create-cluster-local.sh)
 
-Une fois le script executé, le cluster est totalement déployé en local. Vous pouvez y accèder via les mêmes liens que pour [Environnement Local](#241-environnement-local) juste au dessus.
+Une fois le script executé, le cluster est totalement déployé en local. A noter que pour acceder au site internet vous devez modifier votre fichier `hosts` afin de faire le resolution de domaine pointant vers le serveur Kubernetes. Nous avions essayé d'utiliser un reverse proxy afin de renvoyer le nom de domaine vers le cluster mais cela ne fonctionnait pas correctement. 
+
+Vous pouvez executer la commande `minikube ip` pour voir l'ip du cluster et ensuite l'ajouter dans le fichier hosts.
+
+```bash
+IP_DU_CLUSTER  web-app-poc.fr
+```
+
+Le site est ensuite accessible à l'adresse: [https://web-app-poc.fr](https://web-app-poc.fr)
+
 
 ### 2.4.3 Environnement Cloud
+
 Infrastructure as Code avec Terraform: [terraform/](./terraform/)
 Déploiement automatisé sur AWS: [.github/workflows/terraform.yml](./.github/workflows/terraform.yml?plain=1#L30)
 
 
 ## 3. Technologies Utilisées
+
 Voici un récapitulatif des téchnologies utilisées pour notre application web. 
+
 - **Frontend** : Next.js, TypeScript, Tailwind CSS
 - **Backend** : Go, Gin Framework
 - **Base de données** : PostgreSQL
@@ -221,9 +268,11 @@ Voici un récapitulatif des téchnologies utilisées pour notre application web.
    - [x] Déploiement de l'application dans une infrastructure cloud pour améliorer la scalabilité et la résilience.
 
 ## ![Logo Google](https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg) Google Labs 
+
 En plus de l'application web, il nous était demandé de faire des labs Google afin de valider des compétences. 
 
 ### Labs Martin RIGAUX
+
 Comme demandé, j'ai terminé les deux labs à 100%. Le lab Terraform nous a été très utile pour la partie IaC du projet. 
 ![Photo Labs Martin](./assets/img/google-labs-martin.png)
 
@@ -237,7 +286,7 @@ Comme demandé, j'ai terminé les deux labs à 100%. Le lab Terraform nous a ét
 - Fonctionnalités
 - Présentation (Front Office - CSS)
 
-Pour les Cyber envoyer par mail à benoit.charroux@gmail.com
+Pour les Cyber envoyer par mail à <benoit.charroux@gmail.com>
 Faire un mini rapport pour que je comprenne ce que vous avez fait avec des copies d'écran de ce à quoi je dois m'attendre et des copies d'écran individuelles des Google labs (voir activitée de votre profil) le code sur Github ou Gitlab
 
 **Date butoir de remise du projet fin avril**

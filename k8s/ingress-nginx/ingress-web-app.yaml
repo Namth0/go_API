@@ -10,10 +10,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - web-app.com  # <-- remplace par ton vrai domaine
+        - web-app-poc.fr  
       secretName: webapp-tls-secret 
   rules:
-    - host: web-app.com  # <-- remplace ici aussi
+    - host: web-app-poc.fr  
       http:
         paths:
           - path: /api

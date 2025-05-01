@@ -25,10 +25,3 @@ roleRef:
   kind: Role
   name: web-app-role
   apiGroup: rbac.authorization.k8s.io
-
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: web-app-sa
-  namespace: web-app

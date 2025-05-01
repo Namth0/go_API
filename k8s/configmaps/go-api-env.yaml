@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: go-api-env
+  namespace: web-app
+data:
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_USER: "webapp"
+  DB_PASSWORD: "OthmanEtMartin"
+  DB_NAME: "pocwebapp"
+  GIN_MODE: "release"
+  ALLOWED_ORIGINS: "http://localhost:3000"
+  AUTH_SERVICE_URL: "http://auth-service.web-app.svc.cluster.local:8081/api/v1" 

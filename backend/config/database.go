@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"mon-api/internal/models"
 	"os"
-
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -22,9 +20,6 @@ type DBConfig struct {
 }
 
 func InitDB() (*gorm.DB, *DBConfig, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, nil, fmt.Errorf("error loading .env file")
-	}
 
 	config := &DBConfig{
 		Host:     os.Getenv("DB_HOST"),
